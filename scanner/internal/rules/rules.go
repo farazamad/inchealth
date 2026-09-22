@@ -51,13 +51,14 @@ func ParseSeverity(s string) (Severity, error) {
 
 // Finding is a single rule violation on a specific resource.
 type Finding struct {
-	RuleID    string   `json:"rule_id"`
-	Title     string   `json:"title"`
-	Severity  Severity `json:"-"`
-	SeverityS string   `json:"severity"`
-	Resource  string   `json:"resource"`
-	Detail    string   `json:"detail"`
-	Remediate string   `json:"remediation"`
+	RuleID     string              `json:"rule_id"`
+	Title      string              `json:"title"`
+	Severity   Severity            `json:"-"`
+	SeverityS  string              `json:"severity"`
+	Resource   string              `json:"resource"`
+	Detail     string              `json:"detail"`
+	Remediate  string              `json:"remediation"`
+	Frameworks map[string][]string `json:"frameworks,omitempty"`
 }
 
 // Rule evaluates the whole plan and returns any violations it finds.
@@ -97,8 +98,12 @@ func All() []Rule {
 		s3TLSOnly(),
 		s3VersioningLogging(),
 		iamWildcard(),
+		iamPasswordPolicy(),
 		sgOpenIngress(),
 		rdsHardening(),
+		ebsEncryption(),
+		kmsRotation(),
+		cloudtrailHardening(),
 		classificationTag(),
 	}
 }
@@ -392,6 +397,110 @@ func rdsHardening() Rule {
 						Severity: Critical, Resource: db.Address,
 						Detail:    "publicly_accessible is true",
 						Remediate: "Set publicly_accessible = false and place the instance in private subnets.",
+					})
+				}
+			}
+			return out
+		},
+	}
+}
+
+func ebsEncryption() Rule {
+	return Rule{
+		ID:    "PHI-EBS-001",
+		Title: "EBS volumes must be encrypted",
+		Check: func(idx *plan.Index) []Finding {
+			var out []Finding
+			for _, v := range idx.OfType("aws_ebs_volume") {
+				if enc, ok := v.Bool("encrypted"); !ok || !enc {
+					out = append(out, Finding{
+						RuleID: "PHI-EBS-001", Title: "EBS volumes must be encrypted",
+						Severity: High, Resource: v.Address,
+						Detail:    "encrypted is not true",
+						Remediate: "Set encrypted = true (and a kms_key_id) on the EBS volume.",
+					})
+				}
+			}
+			return out
+		},
+	}
+}
+
+func kmsRotation() Rule {
+	return Rule{
+		ID:    "PHI-KMS-001",
+		Title: "KMS keys must have automatic rotation enabled",
+		Check: func(idx *plan.Index) []Finding {
+			var out []Finding
+			for _, k := range idx.OfType("aws_kms_key") {
+				if rot, ok := k.Bool("enable_key_rotation"); !ok || !rot {
+					out = append(out, Finding{
+						RuleID: "PHI-KMS-001", Title: "KMS keys must have automatic rotation enabled",
+						Severity: Medium, Resource: k.Address,
+						Detail:    "enable_key_rotation is not true",
+						Remediate: "Set enable_key_rotation = true so key material rotates annually.",
+					})
+				}
+			}
+			return out
+		},
+	}
+}
+
+func cloudtrailHardening() Rule {
+	return Rule{
+		ID:    "PHI-CT-001",
+		Title: "CloudTrail must be multi-region, validated, and KMS-encrypted",
+		Check: func(idx *plan.Index) []Finding {
+			var out []Finding
+			for _, ct := range idx.OfType("aws_cloudtrail") {
+				var problems []string
+				if multi, ok := ct.Bool("is_multi_region_trail"); !ok || !multi {
+					problems = append(problems, "not multi-region")
+				}
+				if valid, ok := ct.Bool("enable_log_file_validation"); !ok || !valid {
+					problems = append(problems, "log file validation disabled")
+				}
+				if key, ok := ct.String("kms_key_id"); !ok || key == "" {
+					problems = append(problems, "logs not encrypted with KMS")
+				}
+				if len(problems) > 0 {
+					out = append(out, Finding{
+						RuleID: "PHI-CT-001", Title: "CloudTrail must be multi-region, validated, and KMS-encrypted",
+						Severity: High, Resource: ct.Address,
+						Detail:    strings.Join(problems, "; "),
+						Remediate: "Set is_multi_region_trail = true, enable_log_file_validation = true, and a kms_key_id.",
+					})
+				}
+			}
+			return out
+		},
+	}
+}
+
+func iamPasswordPolicy() Rule {
+	requiredFlags := []string{"require_uppercase_characters", "require_lowercase_characters", "require_numbers", "require_symbols"}
+	return Rule{
+		ID:    "PHI-IAM-002",
+		Title: "IAM account password policy must meet minimum strength",
+		Check: func(idx *plan.Index) []Finding {
+			var out []Finding
+			for _, p := range idx.OfType("aws_iam_account_password_policy") {
+				var problems []string
+				if length, ok := numeric(p.Values["minimum_password_length"]); !ok || length < 14 {
+					problems = append(problems, "minimum_password_length < 14")
+				}
+				for _, flag := range requiredFlags {
+					if v, ok := p.Bool(flag); !ok || !v {
+						problems = append(problems, flag+" not enabled")
+					}
+				}
+				if len(problems) > 0 {
+					out = append(out, Finding{
+						RuleID: "PHI-IAM-002", Title: "IAM account password policy must meet minimum strength",
+						Severity: Medium, Resource: p.Address,
+						Detail:    strings.Join(problems, "; "),
+						Remediate: "Require length >= 14 and upper/lower/number/symbol complexity.",
 					})
 				}
 			}

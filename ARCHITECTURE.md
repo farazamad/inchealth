@@ -60,6 +60,17 @@ monitoring.** Each is independently useful and independently testable.
 | PHI monitor | Lambda subscribed to a Kinesis stream of CloudTrail + S3 access logs; alerts to SNS → PagerDuty and AWS Security Hub. |
 | Terraform | Applied via CI with OIDC-assumed roles; state in encrypted S3 + DynamoDB lock. |
 
+## Compliance mapping layer
+
+A shared catalog (`compliance/controls.json`) crosswalks every control —
+automated (`phi-scan`), runtime (JIT/ABAC/monitor), and manual (process) — to
+requirement IDs across HIPAA, NIST 800-53, CIS AWS, PCI DSS, and SOC 2. Both the
+Go scanner (`-catalog`, to annotate findings) and the Python report generator
+(`phi-compliance`) read it, so there is one source of truth. Reports are honest
+by construction: coverage is computed only over mapped requirements, and manual
+safeguards are represented, never silently assumed satisfied. See
+[`docs/compliance.md`](docs/compliance.md).
+
 ## Design principles
 
 - **Fail closed.** Missing signals (no MFA claim, unknown network tier, broken

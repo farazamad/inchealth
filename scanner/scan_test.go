@@ -48,6 +48,8 @@ func TestInsecurePlanFlagsExpectedRules(t *testing.T) {
 		"PHI-RDS-001", // unencrypted
 		"PHI-RDS-002", // publicly accessible
 		"PHI-TAG-001", // dynamodb missing classification
+		"PHI-KMS-001", // kms key rotation disabled
+		"PHI-CT-001",  // cloudtrail not hardened
 	}
 	for _, id := range want {
 		if !ids[id] {

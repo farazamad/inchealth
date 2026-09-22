@@ -15,6 +15,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/farazamad/inchealth/scanner/internal/catalog"
 	"github.com/farazamad/inchealth/scanner/internal/plan"
 	"github.com/farazamad/inchealth/scanner/internal/report"
 	"github.com/farazamad/inchealth/scanner/internal/rules"
@@ -30,6 +31,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	planPath := fs.String("plan", "-", "path to `terraform show -json` output ('-' for stdin)")
 	format := fs.String("format", "table", "output format: table|json|sarif")
 	failOn := fs.String("fail-on", "high", "exit non-zero at this severity or above: low|medium|high|critical")
+	catalogPath := fs.String("catalog", "", "optional control catalog JSON to annotate findings with framework mappings")
 	list := fs.Bool("list-rules", false, "list the rules and exit")
 	if err := fs.Parse(args); err != nil {
 		return 2
@@ -55,6 +57,19 @@ func run(args []string, stdout, stderr io.Writer) int {
 	}
 
 	findings := rules.Evaluate(idx)
+
+	if *catalogPath != "" {
+		cat, err := catalog.Load(*catalogPath)
+		if err != nil {
+			fmt.Fprintln(stderr, "error:", err)
+			return 2
+		}
+		for i := range findings {
+			if m := cat.Mappings(findings[i].RuleID); m != nil {
+				findings[i].Frameworks = m
+			}
+		}
+	}
 
 	switch report.Normalize(*format) {
 	case "json":

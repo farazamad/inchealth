@@ -21,6 +21,7 @@ dev = ["pytest>=8.0", "httpx>=0.27"]
 
 [project.scripts]
 phi-monitor = "phi_guardian.phi_monitor.cli:main"
+phi-compliance = "phi_guardian.compliance.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

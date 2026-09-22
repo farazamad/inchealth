@@ -1,0 +1,335 @@
+{
+  "_comment": "Single source of truth crosswalking PHI Guardian controls to compliance frameworks. Read by the Go scanner (--catalog) and the Python compliance report generator. Mappings are illustrative and should be reviewed with your compliance/GRC team before use in an audit.",
+  "frameworks": {
+    "hipaa": { "name": "HIPAA Security Rule", "version": "45 CFR Part 164 Subpart C" },
+    "nist_800_53": { "name": "NIST SP 800-53", "version": "Rev. 5" },
+    "cis_aws": { "name": "CIS AWS Foundations Benchmark", "version": "v3.0.0" },
+    "pci_dss": { "name": "PCI DSS", "version": "v4.0" },
+    "soc2": { "name": "SOC 2 Trust Services Criteria", "version": "2017" }
+  },
+  "controls": [
+    {
+      "id": "PHI-S3-001", "title": "S3 bucket blocks all public access",
+      "type": "automated", "component": "phi-scan",
+      "mappings": {
+        "hipaa": ["164.312(a)(1)", "164.312(e)(1)"],
+        "nist_800_53": ["AC-3", "SC-7"],
+        "cis_aws": ["2.1.4"],
+        "pci_dss": ["1.3.1"],
+        "soc2": ["CC6.1", "CC6.6"]
+      }
+    },
+    {
+      "id": "PHI-S3-002", "title": "S3 bucket encrypted with customer-managed KMS",
+      "type": "automated", "component": "phi-scan",
+      "mappings": {
+        "hipaa": ["164.312(a)(2)(iv)", "164.312(e)(2)(ii)"],
+        "nist_800_53": ["SC-28", "SC-12"],
+        "cis_aws": ["2.1.1"],
+        "pci_dss": ["3.5.1"],
+        "soc2": ["CC6.1"]
+      }
+    },
+    {
+      "id": "PHI-S3-003", "title": "S3 bucket enforces TLS in transit",
+      "type": "automated", "component": "phi-scan",
+      "mappings": {
+        "hipaa": ["164.312(e)(1)", "164.312(e)(2)(ii)"],
+        "nist_800_53": ["SC-8", "SC-8(1)"],
+        "cis_aws": ["2.1.2"],
+        "pci_dss": ["4.2.1"],
+        "soc2": ["CC6.7"]
+      }
+    },
+    {
+      "id": "PHI-S3-004", "title": "S3 bucket versioning and access logging",
+      "type": "automated", "component": "phi-scan",
+      "mappings": {
+        "hipaa": ["164.312(b)", "164.308(a)(7)(ii)(A)"],
+        "nist_800_53": ["AU-2", "CP-9"],
+        "cis_aws": ["3.6"],
+        "pci_dss": ["10.2.1"],
+        "soc2": ["CC7.2", "A1.2"]
+      }
+    },
+    {
+      "id": "PHI-IAM-001", "title": "No IAM policy grants Action:* on Resource:*",
+      "type": "automated", "component": "phi-scan",
+      "mappings": {
+        "hipaa": ["164.312(a)(1)", "164.308(a)(4)"],
+        "nist_800_53": ["AC-6", "AC-6(1)"],
+        "cis_aws": ["1.16"],
+        "pci_dss": ["7.2.1"],
+        "soc2": ["CC6.3"]
+      }
+    },
+    {
+      "id": "PHI-IAM-002", "title": "IAM account password policy meets minimum strength",
+      "type": "automated", "component": "phi-scan",
+      "mappings": {
+        "hipaa": ["164.308(a)(5)(ii)(D)"],
+        "nist_800_53": ["IA-5", "IA-5(1)"],
+        "cis_aws": ["1.8"],
+        "pci_dss": ["8.3.6"],
+        "soc2": ["CC6.1"]
+      }
+    },
+    {
+      "id": "PHI-SG-001", "title": "Security groups do not expose sensitive ports to the internet",
+      "type": "automated", "component": "phi-scan",
+      "mappings": {
+        "hipaa": ["164.312(a)(1)", "164.312(e)(1)"],
+        "nist_800_53": ["SC-7", "SC-7(3)"],
+        "cis_aws": ["5.2"],
+        "pci_dss": ["1.4.1"],
+        "soc2": ["CC6.6"]
+      }
+    },
+    {
+      "id": "PHI-RDS-001", "title": "RDS instances encrypted at rest",
+      "type": "automated", "component": "phi-scan",
+      "mappings": {
+        "hipaa": ["164.312(a)(2)(iv)"],
+        "nist_800_53": ["SC-28"],
+        "cis_aws": ["2.3.1"],
+        "pci_dss": ["3.5.1"],
+        "soc2": ["CC6.1"]
+      }
+    },
+    {
+      "id": "PHI-RDS-002", "title": "RDS instances not publicly accessible",
+      "type": "automated", "component": "phi-scan",
+      "mappings": {
+        "hipaa": ["164.312(e)(1)"],
+        "nist_800_53": ["SC-7"],
+        "cis_aws": ["2.3.3"],
+        "pci_dss": ["1.3.1"],
+        "soc2": ["CC6.6"]
+      }
+    },
+    {
+      "id": "PHI-EBS-001", "title": "EBS volumes encrypted at rest",
+      "type": "automated", "component": "phi-scan",
+      "mappings": {
+        "hipaa": ["164.312(a)(2)(iv)"],
+        "nist_800_53": ["SC-28"],
+        "cis_aws": ["2.2.1"],
+        "pci_dss": ["3.5.1"],
+        "soc2": ["CC6.1"]
+      }
+    },
+    {
+      "id": "PHI-KMS-001", "title": "KMS keys have automatic rotation enabled",
+      "type": "automated", "component": "phi-scan",
+      "mappings": {
+        "hipaa": ["164.312(a)(2)(iv)"],
+        "nist_800_53": ["SC-12", "SC-12(1)"],
+        "cis_aws": ["3.8"],
+        "pci_dss": ["3.6.1"],
+        "soc2": ["CC6.1"]
+      }
+    },
+    {
+      "id": "PHI-CT-001", "title": "CloudTrail multi-region, validated, KMS-encrypted",
+      "type": "automated", "component": "phi-scan",
+      "mappings": {
+        "hipaa": ["164.312(b)", "164.308(a)(1)(ii)(D)"],
+        "nist_800_53": ["AU-2", "AU-6", "AU-9"],
+        "cis_aws": ["3.1", "3.2", "3.5", "3.7"],
+        "pci_dss": ["10.2.1", "10.5.1"],
+        "soc2": ["CC7.2"]
+      }
+    },
+    {
+      "id": "PHI-TAG-001", "title": "Data stores carry a data-classification tag",
+      "type": "automated", "component": "phi-scan",
+      "mappings": {
+        "hipaa": ["164.308(a)(1)(ii)(A)", "164.308(a)(7)(ii)(E)"],
+        "nist_800_53": ["RA-2", "CM-8"],
+        "pci_dss": ["12.5.1"],
+        "soc2": ["CC3.2"]
+      }
+    },
+    {
+      "id": "JIT-TTL", "title": "Access is time-bound and auto-expires",
+      "type": "runtime", "component": "jit_access",
+      "mappings": {
+        "hipaa": ["164.308(a)(4)", "164.312(a)(2)(iii)"],
+        "nist_800_53": ["AC-2", "AC-2(5)"],
+        "pci_dss": ["8.2.8"],
+        "soc2": ["CC6.1", "CC6.2"]
+      }
+    },
+    {
+      "id": "JIT-SOD", "title": "Separation of duties on access approval",
+      "type": "runtime", "component": "jit_access",
+      "mappings": {
+        "hipaa": ["164.308(a)(3)", "164.308(a)(4)"],
+        "nist_800_53": ["AC-5"],
+        "pci_dss": ["7.2"],
+        "soc2": ["CC6.3"]
+      }
+    },
+    {
+      "id": "JIT-APPROVAL", "title": "Access is provisioned via an approval workflow",
+      "type": "runtime", "component": "jit_access",
+      "mappings": {
+        "hipaa": ["164.308(a)(4)(ii)(B)"],
+        "nist_800_53": ["AC-2", "AC-6(2)"],
+        "pci_dss": ["7.2.1"],
+        "soc2": ["CC6.2"]
+      }
+    },
+    {
+      "id": "JIT-AUDIT", "title": "All access grants are recorded to an append-only audit log",
+      "type": "runtime", "component": "jit_access",
+      "mappings": {
+        "hipaa": ["164.312(b)"],
+        "nist_800_53": ["AU-2", "AU-3", "AU-12"],
+        "pci_dss": ["10.2"],
+        "soc2": ["CC7.2"]
+      }
+    },
+    {
+      "id": "ABAC-MFA", "title": "PHI access requires multi-factor authentication",
+      "type": "runtime", "component": "classification",
+      "mappings": {
+        "hipaa": ["164.312(d)"],
+        "nist_800_53": ["IA-2", "IA-2(1)"],
+        "cis_aws": ["1.5", "1.10"],
+        "pci_dss": ["8.4.2"],
+        "soc2": ["CC6.1"]
+      }
+    },
+    {
+      "id": "ABAC-NETWORK", "title": "PHI access restricted to trusted networks",
+      "type": "runtime", "component": "classification",
+      "mappings": {
+        "hipaa": ["164.312(e)(1)"],
+        "nist_800_53": ["AC-17", "SC-7"],
+        "pci_dss": ["1.3"],
+        "soc2": ["CC6.6"]
+      }
+    },
+    {
+      "id": "ABAC-DEFAULT-DENY", "title": "Access is default-deny, least privilege",
+      "type": "runtime", "component": "classification",
+      "mappings": {
+        "hipaa": ["164.312(a)(1)"],
+        "nist_800_53": ["AC-3", "AC-6"],
+        "pci_dss": ["7.3.1"],
+        "soc2": ["CC6.3"]
+      }
+    },
+    {
+      "id": "ABAC-CLASSIFICATION", "title": "Data classification governs access decisions",
+      "type": "runtime", "component": "classification",
+      "mappings": {
+        "hipaa": ["164.308(a)(1)"],
+        "nist_800_53": ["RA-2", "AC-3"],
+        "pci_dss": ["9.4.1"],
+        "soc2": ["CC3.2"]
+      }
+    },
+    {
+      "id": "MON-EXFIL", "title": "PHI exfiltration detection and alerting",
+      "type": "runtime", "component": "phi_monitor",
+      "mappings": {
+        "hipaa": ["164.308(a)(1)(ii)(D)", "164.308(a)(6)"],
+        "nist_800_53": ["SI-4", "AU-6", "IR-4"],
+        "cis_aws": ["4.1"],
+        "pci_dss": ["10.4", "11.5.1"],
+        "soc2": ["CC7.2", "CC7.3"]
+      }
+    },
+    {
+      "id": "MON-PHI-LOGGING", "title": "PHI data-access events are logged",
+      "type": "runtime", "component": "phi_monitor",
+      "mappings": {
+        "hipaa": ["164.312(b)"],
+        "nist_800_53": ["AU-2", "AU-3"],
+        "pci_dss": ["10.2.1"],
+        "soc2": ["CC7.2"]
+      }
+    },
+    {
+      "id": "MAN-BAA", "title": "Business Associate Agreements with vendors handling PHI",
+      "type": "manual", "component": "process",
+      "mappings": {
+        "hipaa": ["164.308(b)(1)", "164.314(a)"],
+        "nist_800_53": ["SA-9", "PS-7"],
+        "pci_dss": ["12.8"],
+        "soc2": ["CC9.2"]
+      }
+    },
+    {
+      "id": "MAN-TRAINING", "title": "Workforce security-awareness training",
+      "type": "manual", "component": "process",
+      "mappings": {
+        "hipaa": ["164.308(a)(5)"],
+        "nist_800_53": ["AT-2", "AT-3"],
+        "pci_dss": ["12.6"],
+        "soc2": ["CC1.4"]
+      }
+    },
+    {
+      "id": "MAN-IR", "title": "Incident response plan and procedures",
+      "type": "manual", "component": "process",
+      "mappings": {
+        "hipaa": ["164.308(a)(6)"],
+        "nist_800_53": ["IR-1", "IR-8"],
+        "pci_dss": ["12.10.1"],
+        "soc2": ["CC7.4", "CC7.5"]
+      }
+    },
+    {
+      "id": "MAN-BCP", "title": "Contingency / backup and disaster-recovery plan",
+      "type": "manual", "component": "process",
+      "mappings": {
+        "hipaa": ["164.308(a)(7)"],
+        "nist_800_53": ["CP-1", "CP-2"],
+        "pci_dss": ["12.10.1"],
+        "soc2": ["A1.2", "A1.3"]
+      }
+    },
+    {
+      "id": "MAN-RISK", "title": "Periodic security risk analysis",
+      "type": "manual", "component": "process",
+      "mappings": {
+        "hipaa": ["164.308(a)(1)(ii)(A)"],
+        "nist_800_53": ["RA-3"],
+        "pci_dss": ["12.3.1"],
+        "soc2": ["CC3.1", "CC3.2"]
+      }
+    },
+    {
+      "id": "MAN-SANCTION", "title": "Sanction policy for workforce violations",
+      "type": "manual", "component": "process",
+      "mappings": {
+        "hipaa": ["164.308(a)(1)(ii)(C)"],
+        "nist_800_53": ["PS-8"],
+        "soc2": ["CC1.5"]
+      }
+    },
+    {
+      "id": "MAN-PHYS", "title": "Physical safeguards and facility access controls",
+      "type": "manual", "component": "process",
+      "mappings": {
+        "hipaa": ["164.310(a)(1)", "164.310(b)"],
+        "nist_800_53": ["PE-2", "PE-3"],
+        "pci_dss": ["9.1"],
+        "soc2": ["CC6.4"]
+      }
+    },
+    {
+      "id": "MAN-ACCESS-REVIEW", "title": "Periodic user access recertification",
+      "type": "manual", "component": "process",
+      "mappings": {
+        "hipaa": ["164.308(a)(4)(ii)(C)"],
+        "nist_800_53": ["AC-2(3)", "AC-6(7)"],
+        "pci_dss": ["7.2.4"],
+        "soc2": ["CC6.2", "CC6.3"]
+      }
+    }
+  ]
+}

@@ -103,6 +103,49 @@
             "publicly_accessible": false,
             "tags": { "data_classification": "phi" }
           }
+        },
+        {
+          "address": "module.phi_exports.aws_kms_key.this",
+          "type": "aws_kms_key",
+          "name": "this",
+          "values": {
+            "description": "CMK for PHI bucket",
+            "enable_key_rotation": true
+          }
+        },
+        {
+          "address": "aws_ebs_volume.clinical",
+          "type": "aws_ebs_volume",
+          "name": "clinical",
+          "values": {
+            "availability_zone": "us-east-1a",
+            "size": 100,
+            "encrypted": true,
+            "tags": { "data_classification": "phi" }
+          }
+        },
+        {
+          "address": "aws_cloudtrail.main",
+          "type": "aws_cloudtrail",
+          "name": "main",
+          "values": {
+            "name": "org-trail",
+            "is_multi_region_trail": true,
+            "enable_log_file_validation": true,
+            "kms_key_id": "arn:aws:kms:us-east-1:111122223333:key/trail"
+          }
+        },
+        {
+          "address": "aws_iam_account_password_policy.strict",
+          "type": "aws_iam_account_password_policy",
+          "name": "strict",
+          "values": {
+            "minimum_password_length": 14,
+            "require_uppercase_characters": true,
+            "require_lowercase_characters": true,
+            "require_numbers": true,
+            "require_symbols": true
+          }
         }
       ],
       "child_modules": []

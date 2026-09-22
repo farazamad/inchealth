@@ -51,4 +51,10 @@ for e in svc.audit_log(g.id):
     print(f"  - {e.action:14s} by {e.actor}")
 PY
 
+bold "5. Compliance mapping: turn scan results into per-framework coverage"
+rule
+./bin/phi-scan -plan scanner/testdata/insecure.plan.json -format json > /tmp/phi_scan.json 2>/dev/null || true
+python -m phi_guardian.compliance.cli --scan /tmp/phi_scan.json --framework all --format text \
+  || echo "(non-zero exit: automated controls are failing)"
+
 bold "Demo complete."

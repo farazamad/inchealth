@@ -33,6 +33,7 @@ PHI Guardian addresses each with a dedicated, testable component.
 | Standing access | [`jit_access/`](src/phi_guardian/jit_access/) — JIT access broker | **Python** (FastAPI) | JIT access, RBAC, separation of duties, audit |
 | Coarse authorization | [`classification/`](src/phi_guardian/classification/) — ABAC engine | **Python** | ABAC, policy-as-code, **data classification ↔ access control** |
 | Undetected access | [`phi_monitor/`](src/phi_guardian/phi_monitor/) — exfil detection + Lambda | **Python** (AWS Lambda) | Detection engineering, PHI logging, Lambda tooling |
+| Audit evidence | [`compliance/`](src/phi_guardian/compliance/) — control crosswalk + reports | **Python** + JSON | HIPAA/NIST/CIS/PCI/SOC 2 mapping, coverage reporting |
 | Secure baseline | [`terraform/`](terraform/) — hardened modules | **Terraform** | IaC, encryption/KMS, least-privilege IAM |
 
 Everything runs locally with **no AWS account and no Terraform install** required
@@ -69,12 +70,12 @@ make build
 ./bin/phi-scan -list-rules
 ```
 
-Rules cover S3 public access / encryption / TLS-only / versioning-logging,
-IAM `*:*` wildcards, security groups exposing sensitive ports to `0.0.0.0/0`,
-RDS encryption and public accessibility, and a **data-classification tagging**
-rule that ties every data store to a sensitivity level. Data classification
-raises the strictness of the checks — the same idea the ABAC engine uses at
-runtime. See [`scanner/README.md`](scanner/README.md).
+The 13 rules cover S3 (public access / KMS / TLS / versioning+logging), IAM
+(`*:*` wildcards, password policy), security groups, RDS (encryption, public
+access), EBS encryption, KMS key rotation, CloudTrail hardening, and a
+**data-classification tagging** rule that ties every data store to a sensitivity
+level. Pass `-catalog compliance/controls.json` to annotate each finding with the
+framework requirements it maps to. See [`scanner/README.md`](scanner/README.md).
 
 ### 2. JIT access broker — time-bound, approval-gated access (Python/FastAPI)
 
@@ -112,12 +113,42 @@ and `AccessDenied` probing bursts.
 python -m phi_guardian.phi_monitor.cli samples/phi_access_events.json --fail-on critical
 ```
 
+### 5. Compliance mapping — controls → framework requirements (Python + JSON)
+
+A single source-of-truth catalog ([`compliance/controls.json`](compliance/controls.json))
+crosswalks every control — automated, runtime, and manual — to specific control
+IDs in **HIPAA Security Rule, NIST 800-53, CIS AWS Foundations Benchmark, PCI DSS,
+and SOC 2**. `phi-compliance` turns a scan result into a per-framework report.
+
+```bash
+phi-scan -plan plan.json -format json > scan.json
+phi-compliance --scan scan.json --framework all --format markdown
+```
+
+**An honest word on "covering all frameworks":** no tool can. Frameworks like
+NIST 800-53 (1000+ controls) and HIPAA include many **administrative, physical,
+and procedural** safeguards (BAAs, training, incident response) that infrastructure
+scanning cannot verify. This layer therefore:
+
+- reports coverage **only against the requirements the catalog maps**, never the
+  whole framework;
+- distinguishes `pass` / `fail` / **`manual`** (attestation required) / `not-assessed`,
+  so a control needing a human is never counted as automatically satisfied;
+- keeps manual safeguards (BAAs, training, IR, BCP, risk analysis, sanctions,
+  physical, access reviews) **in** the catalog so the gap is visible, not hidden.
+
+The result is a defensible coverage picture (e.g. 100% of *mapped* CIS AWS
+requirements on the secure baseline; ~68% of mapped HIPAA requirements with the
+remainder explicitly flagged as manual) rather than a false "100% compliant" badge.
+
 ## Architecture & security design
 
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) — how the pieces fit and deploy on AWS.
 - [`docs/threat-model.md`](docs/threat-model.md) — assets, threats, and the
   control each component provides.
 - [`docs/jit-access.md`](docs/jit-access.md) — the JIT grant lifecycle.
+- [`docs/compliance.md`](docs/compliance.md) — the control→framework crosswalk
+  and why "covers all frameworks" is the wrong goal.
 
 ## Tech stack
 
@@ -132,6 +163,8 @@ src/phi_guardian/
   classification/        data sensitivity + ABAC engine
   jit_access/            JIT broker: models, service, FastAPI app
   phi_monitor/           exfil detector, CloudTrail normalizer, Lambda handler, CLI
+  compliance/            control catalog loader, report generator, CLI
+compliance/controls.json shared control → framework crosswalk (source of truth)
 terraform/               hardened modules + secure/insecure examples
 tests/                   pytest suite
 samples/                 sample access-event batch for the monitor

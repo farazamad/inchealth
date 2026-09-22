@@ -23,7 +23,16 @@ scan-secure: build ## Scan the secure Terraform plan fixture (expect exit 0)
 	./$(BIN) -plan scanner/testdata/secure.plan.json -fail-on high
 
 scan-insecure: build ## Scan the insecure Terraform plan fixture (expect exit 1)
-	./$(BIN) -plan scanner/testdata/insecure.plan.json -fail-on high || true
+	./$(BIN) -plan scanner/testdata/insecure.plan.json -catalog compliance/controls.json -fail-on high || true
+
+compliance: build ## Generate a per-framework compliance report from a scan
+	./$(BIN) -plan scanner/testdata/insecure.plan.json -format json > /tmp/phi_scan.json || true
+	$(PY) -m phi_guardian.compliance.cli --scan /tmp/phi_scan.json --framework all --format text
+
+compliance-report: build ## Write a Markdown compliance report to compliance-report.md
+	./$(BIN) -plan scanner/testdata/secure.plan.json -format json > /tmp/phi_scan.json || true
+	$(PY) -m phi_guardian.compliance.cli --scan /tmp/phi_scan.json --framework all --format markdown --output compliance-report.md
+	@echo "wrote compliance-report.md"
 
 monitor: ## Score the sample PHI access events for exfiltration
 	$(PY) -m phi_guardian.phi_monitor.cli samples/phi_access_events.json || true

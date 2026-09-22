@@ -55,6 +55,26 @@
           "values": {
             "name": "audit-events"
           }
+        },
+        {
+          "address": "aws_kms_key.legacy",
+          "type": "aws_kms_key",
+          "name": "legacy",
+          "values": {
+            "description": "legacy key",
+            "enable_key_rotation": false
+          }
+        },
+        {
+          "address": "aws_cloudtrail.main",
+          "type": "aws_cloudtrail",
+          "name": "main",
+          "values": {
+            "name": "org-trail",
+            "is_multi_region_trail": false,
+            "enable_log_file_validation": false,
+            "kms_key_id": ""
+          }
         }
       ],
       "child_modules": []

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"sort"
 	"strings"
 
 	"github.com/farazamad/inchealth/scanner/internal/rules"
@@ -26,8 +27,23 @@ func Table(w io.Writer, findings []rules.Finding) {
 	for _, f := range findings {
 		fmt.Fprintf(w, "[%-8s] %s  (%s)\n", f.Severity.String(), f.RuleID, f.Resource)
 		fmt.Fprintf(w, "    %s\n", f.Detail)
-		fmt.Fprintf(w, "    fix: %s\n\n", f.Remediate)
+		fmt.Fprintf(w, "    fix: %s\n", f.Remediate)
+		if len(f.Frameworks) > 0 {
+			for _, fw := range sortedKeys(f.Frameworks) {
+				fmt.Fprintf(w, "    %s: %s\n", fw, strings.Join(f.Frameworks[fw], ", "))
+			}
+		}
+		fmt.Fprintln(w)
 	}
+}
+
+func sortedKeys(m map[string][]string) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
 }
 
 // JSON writes findings as an indented JSON array.

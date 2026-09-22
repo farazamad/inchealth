@@ -52,3 +52,13 @@ jobs:
           pip install -e ".[dev,server]"
       - name: Test
         run: python -m pytest
+      - name: Compliance report (target-state)
+        run: |
+          python -m phi_guardian.compliance.cli --framework all --format markdown \
+            --output compliance-report.md
+      - name: Upload compliance report
+        uses: actions/upload-artifact@v4
+        with:
+          name: compliance-report
+          path: compliance-report.md
+        continue-on-error: true
