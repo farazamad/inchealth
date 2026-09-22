@@ -1,0 +1,36 @@
+{
+  "classification_map": { "ih-phi-exports-prod": "phi", "ih-public-web": "public" },
+  "records": [
+    {
+      "eventTime": "2026-01-02T03:12:00Z",
+      "eventName": "GetObject",
+      "userIdentity": { "arn": "arn:aws:sts::111122223333:assumed-role/etl/backfill" },
+      "sourceIPAddress": "203.0.113.9",
+      "requestParameters": { "bucketName": "ih-phi-exports-prod" },
+      "additionalEventData": { "bytesTransferredOut": 734003200, "jitGrantActive": false },
+      "geoLocation": { "country": "RU" }
+    },
+    {
+      "eventTime": "2026-01-02T15:40:00Z",
+      "eventName": "CopyObject",
+      "userIdentity": { "arn": "arn:aws:sts::111122223333:assumed-role/analyst/jdoe" },
+      "requestParameters": { "bucketName": "ih-phi-exports-prod" },
+      "additionalEventData": { "bytesTransferredOut": 1024, "jitGrantActive": true, "isPublicDestination": true }
+    },
+    {
+      "eventTime": "2026-01-02T16:05:00Z",
+      "eventName": "GetObject",
+      "userIdentity": { "arn": "arn:aws:sts::111122223333:assumed-role/clinician/nurse1" },
+      "requestParameters": { "bucketName": "ih-phi-exports-prod" },
+      "additionalEventData": { "bytesTransferredOut": 2048, "jitGrantActive": true },
+      "geoLocation": { "country": "US" }
+    },
+    {
+      "eventTime": "2026-01-02T16:06:00Z",
+      "eventName": "GetObject",
+      "userIdentity": { "arn": "arn:aws:sts::111122223333:assumed-role/web/svc" },
+      "requestParameters": { "bucketName": "ih-public-web" },
+      "additionalEventData": { "bytesTransferredOut": 512, "jitGrantActive": false }
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+{
+  "format_version": "1.2",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "module.phi_exports.aws_s3_bucket.this",
+          "type": "aws_s3_bucket",
+          "name": "this",
+          "values": {
+            "bucket": "ih-phi-exports-prod",
+            "tags": { "data_classification": "phi", "team": "data-platform" }
+          }
+        },
+        {
+          "address": "module.phi_exports.aws_s3_bucket_public_access_block.this",
+          "type": "aws_s3_bucket_public_access_block",
+          "name": "this",
+          "values": {
+            "bucket": "ih-phi-exports-prod",
+            "block_public_acls": true,
+            "block_public_policy": true,
+            "ignore_public_acls": true,
+            "restrict_public_buckets": true
+          }
+        },
+        {
+          "address": "module.phi_exports.aws_s3_bucket_server_side_encryption_configuration.this",
+          "type": "aws_s3_bucket_server_side_encryption_configuration",
+          "name": "this",
+          "values": {
+            "bucket": "ih-phi-exports-prod",
+            "rule": [
+              {
+                "apply_server_side_encryption_by_default": [
+                  { "sse_algorithm": "aws:kms", "kms_master_key_id": "arn:aws:kms:us-east-1:111122223333:key/phi" }
+                ],
+                "bucket_key_enabled": true
+              }
+            ]
+          }
+        },
+        {
+          "address": "module.phi_exports.aws_s3_bucket_versioning.this",
+          "type": "aws_s3_bucket_versioning",
+          "name": "this",
+          "values": {
+            "bucket": "ih-phi-exports-prod",
+            "versioning_configuration": [{ "status": "Enabled" }]
+          }
+        },
+        {
+          "address": "module.phi_exports.aws_s3_bucket_logging.this",
+          "type": "aws_s3_bucket_logging",
+          "name": "this",
+          "values": {
+            "bucket": "ih-phi-exports-prod",
+            "target_bucket": "ih-access-logs-prod",
+            "target_prefix": "phi-exports/"
+          }
+        },
+        {
+          "address": "module.phi_exports.aws_s3_bucket_policy.this",
+          "type": "aws_s3_bucket_policy",
+          "name": "this",
+          "values": {
+            "bucket": "ih-phi-exports-prod",
+            "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"DenyInsecureTransport\",\"Effect\":\"Deny\",\"Principal\":\"*\",\"Action\":\"s3:*\",\"Resource\":[\"arn:aws:s3:::ih-phi-exports-prod\",\"arn:aws:s3:::ih-phi-exports-prod/*\"],\"Condition\":{\"Bool\":{\"aws:SecureTransport\":\"false\"}}}]}"
+          }
+        },
+        {
+          "address": "aws_iam_policy.phi_reader",
+          "type": "aws_iam_policy",
+          "name": "phi_reader",
+          "values": {
+            "name": "phi-reader",
+            "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"s3:GetObject\"],\"Resource\":\"arn:aws:s3:::ih-phi-exports-prod/*\"}]}"
+          }
+        },
+        {
+          "address": "aws_security_group.db",
+          "type": "aws_security_group",
+          "name": "db",
+          "values": {
+            "name": "phi-db-sg",
+            "ingress": [
+              {
+                "from_port": 5432,
+                "to_port": 5432,
+                "protocol": "tcp",
+                "cidr_blocks": ["10.0.0.0/16"]
+              }
+            ]
+          }
+        },
+        {
+          "address": "aws_db_instance.clinical",
+          "type": "aws_db_instance",
+          "name": "clinical",
+          "values": {
+            "identifier": "clinical-records",
+            "storage_encrypted": true,
+            "publicly_accessible": false,
+            "tags": { "data_classification": "phi" }
+          }
+        }
+      ],
+      "child_modules": []
+    }
+  }
+}

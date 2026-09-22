@@ -1,0 +1,54 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  scanner:
+    name: Go scanner
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write # for SARIF upload
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+      - name: Vet & test
+        working-directory: scanner
+        run: |
+          go vet ./...
+          go test ./...
+      - name: Build
+        run: |
+          mkdir -p bin
+          cd scanner && go build -o ../bin/phi-scan .
+      - name: Gate secure example (must pass)
+        run: ./bin/phi-scan -plan scanner/testdata/secure.plan.json -fail-on high
+      - name: Scan insecure example -> SARIF (non-blocking, for demo)
+        run: ./bin/phi-scan -plan scanner/testdata/insecure.plan.json -format sarif > phi-scan.sarif || true
+      - name: Upload SARIF to code scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: phi-scan.sarif
+        continue-on-error: true
+
+  python:
+    name: Python (phi_guardian)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev,server]"
+      - name: Test
+        run: python -m pytest

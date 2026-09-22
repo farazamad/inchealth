@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "phi-guardian"
+version = "0.1.0"
+description = "Cloud security tooling for HIPAA-regulated AWS workloads: JIT access, ABAC, and PHI exfiltration detection."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Faraz Ahmad" }]
+dependencies = [
+    "fastapi>=0.110",
+    "pydantic>=2.5",
+]
+
+[project.optional-dependencies]
+server = ["uvicorn[standard]>=0.27"]
+dev = ["pytest>=8.0", "httpx>=0.27"]
+
+[project.scripts]
+phi-monitor = "phi_guardian.phi_monitor.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-q"
